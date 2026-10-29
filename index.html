@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acolher — apoio emocional</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #131a19;
+      --surface: #1d2826;
+      --surface-soft: #202c2a;
+      --text: #f3f6f3;
+      --muted: #a9b9b5;
+      --accent: #70c4ac;
+      --accent-dark: #245947;
+      --border: #344541;
+      --warning-bg: #382b1c;
+      --warning-text: #ffd09a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 10% 0%, #21332d 0, transparent 36%),
+        var(--bg);
+      color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, textarea { font: inherit; }
+
+    .app {
+      width: min(100%, 900px);
+      min-height: min(850px, calc(100vh - 48px));
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--bg);
+      box-shadow: 0 18px 55px rgba(0, 0, 0, .26);
+    }
+
+    header {
+      padding: 24px clamp(18px, 4vw, 38px) 20px;
+      border-bottom: 1px solid var(--border);
+      background: #171f1e;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 23px;
+      font-weight: 750;
+      letter-spacing: -.03em;
+    }
+
+    .brand-icon { font-size: 25px; }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .safety {
+      margin: 18px clamp(18px, 4vw, 38px) 0;
+      padding: 13px 16px;
+      border: 1px solid #59452d;
+      border-radius: 14px;
+      background: var(--warning-bg);
+      color: var(--warning-text);
+      font-size: 14px;
+    }
+
+    .content { padding: 20px clamp(18px, 4vw, 38px) 30px; }
+
+    .section-title {
+      margin: 4px 0 6px;
+      font-size: 22px;
+      letter-spacing: -.025em;
+    }
+
+    .section-description {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+    }
+
+    .choice {
+      display: block;
+      width: 100%;
+      padding: 19px;
+      border: 1px solid var(--border);
+      border-radius: 19px;
+      background: var(--surface);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+
+    .choice:hover, .choice:focus-visible {
+      border-color: var(--accent);
+      background: #202e2b;
+      outline: none;
+    }
+
+    .choice:active { transform: scale(.995); }
+
+    .choice-icon {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 25px;
+    }
+
+    .choice-title {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 19px;
+      font-weight: 750;
+    }
+
+    .choice-description {
+      display: block;
+      color: var(--muted);
+    }
+
+    .choice-good {
+      display: block;
+      margin-top: 10px;
+    }
+
+    .choice-example {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .chat-screen[hidden], .chooser[hidden] { display: none; }
+
+    .chat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .chat-mode {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .secondary-button {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .secondary-button:hover { border-color: var(--accent); }
+
+    .chat {
+      min-height: 310px;
+      max-height: 52vh;
+      overflow-y: auto;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: #17201e;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: flex;
+      margin: 0 0 14px;
+      animation: appear .18s ease-out;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user { justify-content: flex-end; }
+
+    .bubble {
+      max-width: min(86%, 650px);
+      padding: 12px 15px;
+      border-radius: 16px 16px 16px 5px;
+      background: #263330;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .user .bubble {
+      border-radius: 16px 16px 5px 16px;
+      background: var(--accent-dark);
+    }
+
+    .option-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 2px 0 16px;
+    }
+
+    .option-chip {
+      padding: 9px 12px;
+      border: 1px solid #45665a;
+      border-radius: 999px;
+      background: #1c2d28;
+      color: #dcf5e9;
+      cursor: pointer;
+    }
+
+    .option-chip:hover { border-color: var(--accent); background: #244136; }
+
+    .composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #1a2422;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 42px;
+      max-height: 130px;
+      padding: 10px 8px;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+    }
+
+    textarea::placeholder { color: #9aaba6; }
+
+    .send {
+      flex: 0 0 auto;
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 11px;
+      background: #3b816b;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .send:hover { background: #47977e; }
+
+    .note {
+      margin: 10px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .crisis {
+      padding: 14px 16px;
+      border: 1px solid #785245;
+      border-radius: 14px;
+      background: #382522;
+      color: #ffe2d8;
+    }
+
+    .crisis strong { display: block; margin-bottom: 6px; }
+    .crisis a { color: #a9e6cd; font-weight: 750; }
+
+    @media (max-width: 600px) {
+      body { padding: 0; }
+      .app { min-height: 100vh; border: 0; border-radius: 0; }
+      header { padding-top: 20px; }
+      .chat { max-height: 50vh; padding: 14px; }
+      .bubble { max-width: 94%; }
+      .choice { padding: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+    .typing { color: var(--muted); font-style: italic; }
+    .send:disabled { opacity: .6; cursor: default; }
+    .bubble.md { white-space: normal; }
+    .bubble.md p { margin: 0 0 .6em; } .bubble.md p:last-child { margin-bottom: 0; }
+    .bubble.md ul, .bubble.md ol { margin: .3em 0 .6em; padding-left: 1.3em; }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="brand"><span class="brand-icon" aria-hidden="true">🌿</span> Acolher</div>
+      <p class="subtitle">Um espaço anônimo e sem julgamentos para desabafar e praticar ferramentas de TCC.</p>
+    </header>
+
+    <div class="safety">
+      Ferramenta de apoio emocional; não substitui psicólogo(a) ou psiquiatra.
+      As mensagens não são salvas por esta página. Em crise, ligue
+      <strong>188 (CVV, 24h)</strong> ou <strong>192 (SAMU)</strong>.
+    </div>
+
+    <section class="content chooser" id="chooser">
+      <h1 class="section-title">Como você gostaria de seguir?</h1>
+      <p class="section-description">Escolha o que parece mais útil agora. Você pode mudar de ideia a qualquer momento.</p>
+
+      <div class="choices">
+        <button class="choice" type="button" data-mode="listening">
+          <span class="choice-icon" aria-hidden="true">👂</span>
+          <span class="choice-title">Escuta ativa</span>
+          <span class="choice-description">Um espaço para desabafar, com alguém que ouve sem julgar, reflete o que você sente e faz perguntas gentis.</span>
+          <span class="choice-good">Boa quando você só precisa ser ouvido(a), sem receber conselhos.</span>
+          <span class="choice-example">“Tive um dia pesado e preciso falar.”</span>
+        </button>
+
+        <button class="choice" type="button" data-mode="cbt">
+          <span class="choice-icon" aria-hidden="true">🧩</span>
+          <span class="choice-title">TCC guiada</span>
+          <span class="choice-description">Passo a passo para examinar um pensamento negativo e construir uma visão mais equilibrada.</span>
+          <span class="choice-good">Boa quando um pensamento ou situação específica está te angustiando.</span>
+          <span class="choice-example">“Tenho certeza de que vou ser reprovado(a).”</span>
+        </button>
+
+        <button class="choice" type="button" data-mode="compassion">
+          <span class="choice-icon" aria-hidden="true">💚</span>
+          <span class="choice-title">Autocompaixão</span>
+          <span class="choice-description">Exercícios para tratar a si mesmo(a) com a mesma gentileza que teria com alguém querido.</span>
+          <span class="choice-good">Boa quando você está se cobrando ou se criticando demais.</span>
+          <span class="choice-example">“Errei de novo, sou um fracasso.”</span>
+        </button>
+
+        <button class="choice" type="button" data-mode="unsure">
+          <span class="choice-icon" aria-hidden="true">🧭</span>
+          <span class="choice-title">Não sei por onde começar</span>
+          <span class="choice-description">Conversamos um pouco e eu te ajudo a escolher a abordagem que combina com o momento.</span>
+          <span class="choice-good">Boa quando você está confuso(a) ou indeciso(a).</span>
+          <span class="choice-example">“Não sei bem o que estou sentindo.”</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="content chat-screen" id="chatScreen" hidden>
+      <div class="chat-top">
+        <h2 class="chat-mode" id="chatMode">Conversa</h2>
+        <button class="secondary-button" id="changeMode" type="button">Trocar abordagem</button>
+      </div>
+
+      <div class="chat" id="chat" aria-live="polite" aria-label="Conversa"></div>
+
+      <form class="composer" id="chatForm">
+        <textarea id="userInput" rows="1" placeholder="Escreva no seu ritmo..." aria-label="Sua mensagem"></textarea>
+        <button class="send" type="submit">Enviar</button>
+      </form>
+      <p class="note">Você pode parar ou trocar de abordagem quando quiser. Evite compartilhar dados pessoais.</p>
+    </section>
+  </main>
+
+  <script>
+    // Endereço do servidor do Acolher (a chave de IA fica guardada lá, não neste arquivo).
+    const API_URL = "COLE_AQUI_O_ENDERECO_PUBLICADO/api/chat";
+
+    const chooser = document.getElementById("chooser");
+    const chatScreen = document.getElementById("chatScreen");
+    const chat = document.getElementById("chat");
+    const chatMode = document.getElementById("chatMode");
+    const form = document.getElementById("chatForm");
+    const input = document.getElementById("userInput");
+    const sendBtn = form.querySelector(".send");
+
+    const modes = {
+      listening: { title: "👂 Escuta ativa", greeting: "Pode falar no seu ritmo. Estou aqui para ouvir sem julgar. O que aconteceu, ou o que está mais presente para você agora?" },
+      cbt: { title: "🧩 TCC guiada", greeting: "Vamos por partes, sem pressa. Pense em uma situação específica que esteja pesando: o que aconteceu?" },
+      compassion: { title: "💚 Autocompaixão", greeting: "Vamos olhar para isso com gentileza, sem minimizar o que aconteceu. O que você está vivendo ou cobrando de si neste momento?" },
+      unsure: { title: "🧭 Vamos encontrar um caminho", greeting: "Tudo bem ainda não saber. O que tem ocupado seus pensamentos ou feito você buscar apoio hoje?" }
+    };
+
+    let currentMode = "";
+    let history = [];
+    let controller = null;
+
+    function esc(s) { return s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+    function miniMarkdown(text) {
+      const blocks = esc(text).split(/\n{2,}/);
+      return blocks.map(b => {
+        const lines = b.split("\n");
+        const inline = s => s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*(?!\s)(.+?)\*/g, "$1<em>$2</em>");
+        if (lines.every(l => /^\s*([-*]|\d+[.)])\s+/.test(l))) {
+          const ordered = /^\s*\d/.test(lines[0]);
+          const items = lines.map(l => "<li>" + inline(l.replace(/^\s*([-*]|\d+[.)])\s+/, "")) + "</li>").join("");
+          return ordered ? "<ol>" + items + "</ol>" : "<ul>" + items + "</ul>";
+        }
+        return "<p>" + inline(lines.join("<br>")) + "</p>";
+      }).join("");
+    }
+
+    function addMessage(text, who = "bot") {
+      const row = document.createElement("div");
+      row.className = "message" + (who === "user" ? " user" : "");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble" + (who === "user" ? "" : " md");
+      if (who === "user") bubble.textContent = text; else bubble.innerHTML = miniMarkdown(text);
+      row.appendChild(bubble);
+      chat.appendChild(row);
+      chat.scrollTop = chat.scrollHeight;
+      return bubble;
+    }
+
+    function startMode(mode) {
+      if (controller) controller.abort();
+      currentMode = mode;
+      chooser.hidden = true;
+      chatScreen.hidden = false;
+      chatMode.textContent = modes[mode].title;
+      chat.replaceChildren();
+      history = [{ role: "assistant", content: modes[mode].greeting }];
+      addMessage(modes[mode].greeting);
+      sendBtn.disabled = false;
+      input.focus();
+    }
+
+    function showCrisisSupport() {
+      const row = document.createElement("div");
+      row.className = "message";
+      const box = document.createElement("div");
+      box.className = "crisis";
+      box.innerHTML = "<strong>Sua segurança vem primeiro.</strong>Se estiver em perigo imediato, fique perto de alguém de confiança e ligue para o <a href=\"tel:192\">SAMU, 192</a>. O <a href=\"tel:188\">CVV, 188</a>, oferece apoio emocional 24h.";
+      row.appendChild(box);
+      chat.appendChild(row);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function normalize(t) { return t.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+    function isCrisis(t) { return /me matar|suicid|quero morrer|tirar minha vida|me machucar|me cortar|nao quero mais viver|acabar com tudo/.test(normalize(t)); }
+
+    async function askBot() {
+      const bubble = addMessage("");
+      bubble.innerHTML = '<span class="typing">escrevendo…</span>';
+      sendBtn.disabled = true;
+      controller = new AbortController();
+      const myController = controller;
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: myController.signal,
+          body: JSON.stringify({ mode: currentMode, messages: history })
+        });
+        if (!res.ok || !res.body) {
+          throw new Error(res.status === 429 ? "Muitas mensagens em pouco tempo. Espere um instante e tente de novo."
+            : "Não consegui responder agora. Tente novamente em alguns instantes.");
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let acc = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          acc += decoder.decode(value, { stream: true });
+          bubble.innerHTML = miniMarkdown(acc);
+          chat.scrollTop = chat.scrollHeight;
+        }
+        if (!acc.trim()) throw new Error("Não consegui responder agora. Tente novamente.");
+        history.push({ role: "assistant", content: acc });
+      } catch (err) {
+        if (myController.signal.aborted) return;
+        bubble.classList.remove("md");
+        bubble.textContent = err.message && !/fetch/i.test(err.message) ? err.message
+          : "Sem conexão com o servidor. Verifique sua internet e tente de novo.";
+      } finally {
+        if (controller === myController) sendBtn.disabled = false;
+      }
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text || sendBtn.disabled) return;
+      addMessage(text, "user");
+      history.push({ role: "user", content: text });
+      input.value = "";
+      if (isCrisis(text)) showCrisisSupport();
+      askBot();
+    });
+
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); form.requestSubmit(); }
+    });
+
+    document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => startMode(b.dataset.mode)));
+
+    document.getElementById("changeMode").addEventListener("click", () => {
+      if (controller) controller.abort();
+      chooser.hidden = false;
+      chatScreen.hidden = true;
+      input.value = "";
+    });
+  </script>
+</body>
+</html>
